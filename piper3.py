@@ -6,27 +6,20 @@ import numpy as np
 import subprocess
 import os
 import time
-
-
-# Initialize GPIO
 GPIO.setmode(GPIO.BCM)
 bReading = 27
 bCapturing = 16
 GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-# Piper TTS configuration
 PIPER_MODEL = "en_US-hfc_female-medium.onnx"
 PIPER_BINARY = "./piper/piper"
 
-# I2C Address for the device
 addr = 0x8
 bus = SMBus(1)
 
 def preprocess_image(image_path):
-    """
-    Preprocess the captured image to enhance OCR performance.
-    """
+
     try:
         image = cv2.imread(image_path)
         if image is None:
@@ -39,7 +32,6 @@ def preprocess_image(image_path):
         kernal = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
         processed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernal)
 
-        # Debugging
         print("Preprocessing successful. Image shape:", processed.shape)
 
         return processed
@@ -48,12 +40,8 @@ def preprocess_image(image_path):
         return None
 
 def capture_image():
-    """
-    Capture an image from the camera and save it as 'frame.png'.
-    """
     print("Capturing image...")
     video_capture = cv2.VideoCapture(0)
-   
     video_capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'YUYV'))
     video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 3840)
     video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 2160)
@@ -75,9 +63,7 @@ def capture_image():
 
 
 def read_text_from_image(image_path="frame.png"):
-    """
-    Read text from an image using OCR.
-    """
+    
     print("Reading text from image...")
 
     if not os.path.exists(image_path):
@@ -98,16 +84,12 @@ def read_text_from_image(image_path="frame.png"):
         print(f"Detected text: {text}")
         command = f'echo "{text}" | {PIPER_BINARY} --model {PIPER_MODEL} --output_file audio.wav'
         subprocess.run(command, shell=True, executable="/bin/bash", check=True)
-
         os.system("cvlc --play-and-exit --quiet audio.wav")
     else:
         print("No text detected in the image.")
         os.system("cvlc --play-and-exit --quiet no_text.wav")
 
 def volume_control():
-    """
-    Adjust system volume based on input from the I2C device.
-    """
     try:
         while True:
             data = bus.read_byte(addr)
@@ -119,9 +101,6 @@ def volume_control():
         print(f"Volume control error: {e}")
 
 def main_loop():
-    """
-    Main loop to handle button presses for capturing and reading.
-    """
     while True:
         try:
             bReadingState = GPIO.input(bReading)
@@ -147,17 +126,11 @@ def main_loop():
 if __name__ == "__main__":
     print("Welcome to ASSISTEX a Text and speak system...")
     os.system("cvlc --play-and-exit --quiet welcome.wav")
-    #tts.tts_to_file(text="Welcome to the OCR and Text to Speech system.", file_path="welcome.wav")
-
-    # Start volume control in the background
     from multiprocessing import Process
     volume_process = Process(target=volume_control)
     volume_process.start()
 
-    # Run the main loop
     main_loop()
-
-    # Clean up on exit
     volume_process.terminate()
     GPIO.cleanup()
 
