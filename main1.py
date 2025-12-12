@@ -13,7 +13,7 @@ bCapturing = 16
 GPIO.setup(bReading, GPIO.IN)
 GPIO.setup(bCapturing, GPIO.IN)
 def CaptureImg():
-    os.system('cvlc --play-and-exit --quiet /home/overwrld/project/final/a.w.wav') #os system library python
+    os.system('cvlc --play-and-exit --quiet /home/overwrld/project/final/a.w.wav') 
     counter = 0
     vid = cv2.VideoCapture(0)
     vid.set(3, 1920)
@@ -71,14 +71,14 @@ def MainStatement(): #เช็คปุ่ม
                 ReadAgain()
                 time.sleep(0.5)
 
-        except cv2.error: #if it have error
+        except cv2.error:
             os.system("espeak -a 200 'Cant detect any camera, please try again' -vaf+f5")
             os.system('cvlc --play-and-exit --quiet /home/overwrld/project/final/error_sound.mp3')
             continue
 
 os.system("espeak -a 200 'welcome' -vaf+f5")
 os.system('cvlc --play-and-exit --quiet /home/overwrld/project/final/welcome.mp3')
-if name == 'main': # multiprocessing python
+if name == 'main':
     script0 = multiprocessing.Process(target = VolumnControl)
     script1 = multiprocessing.Process(target = MainStatement)
 
